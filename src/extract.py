@@ -1,6 +1,6 @@
 import requests
 
-from config import get_cmf_api_key
+from src.config import get_cmf_api_key
 
 
 CMF_UF_URL = (

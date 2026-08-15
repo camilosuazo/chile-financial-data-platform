@@ -17,9 +17,10 @@ Por ahora, el único indicador considerado es la Unidad de Fomento (UF).
 - Configuración segura de la API key mediante variables de entorno.
 - Extracción de valores mensuales de la UF desde la API de la CMF.
 - Inspección inicial de la respuesta JSON.
+- Transformación de fechas y valores a tipos adecuados para PostgreSQL.
 
-Los próximos pasos son transformar fechas y valores, diseñar la tabla en
-PostgreSQL e implementar una carga que evite registros duplicados.
+Los próximos pasos son diseñar la tabla en PostgreSQL e implementar una carga
+que evite registros duplicados.
 
 ## Requisitos
 
@@ -58,8 +59,17 @@ El archivo `.env` está excluido de Git y no debe publicarse.
 Desde la raíz del proyecto:
 
 ```bash
-python src/extract.py
+python -m src.extract
 ```
 
 Actualmente, el programa consulta los valores de la UF de enero de 2025 y
 muestra la estructura general de la respuesta y el primer registro.
+
+## Ejecutar la transformación
+
+```bash
+python -m src.transform
+```
+
+La transformación convierte las fechas a objetos `date` y los valores de la UF
+a objetos `Decimal`.
