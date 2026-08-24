@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS uf_values (
+    observation_date DATE PRIMARY KEY,
+    value NUMERIC(12, 2) NOT NULL CHECK (value > 0),
+    source TEXT NOT NULL DEFAULT 'CMF',
+    loaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

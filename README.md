@@ -18,13 +18,17 @@ Por ahora, el único indicador considerado es la Unidad de Fomento (UF).
 - Extracción de valores mensuales de la UF desde la API de la CMF.
 - Inspección inicial de la respuesta JSON.
 - Transformación de fechas y valores a tipos adecuados para PostgreSQL.
+- Tabla PostgreSQL con restricciones de integridad.
+- Conexión e inserción desde Python mediante Psycopg.
+- Carga idempotente que evita fechas duplicadas.
 
-Los próximos pasos son diseñar la tabla en PostgreSQL e implementar una carga
-que evite registros duplicados.
+Los próximos pasos son incorporar logging, mejorar el manejo de errores y
+permitir seleccionar el período que se desea cargar.
 
 ## Requisitos
 
 - Python 3
+- PostgreSQL 18
 - Una API key de la [CMF](https://api.cmfchile.cl/uso-de-api-key.html)
 
 ## Configuración local
@@ -50,9 +54,27 @@ cp .env.example .env
 
 ```env
 CMF_API_KEY=tu_clave
+DB_NAME=chile_financial_data
+DB_USER=tu_usuario_postgres
+DB_HOST=localhost
+DB_PORT=5432
 ```
 
 El archivo `.env` está excluido de Git y no debe publicarse.
+
+## Preparar PostgreSQL
+
+Crear la base de datos:
+
+```bash
+createdb chile_financial_data
+```
+
+Crear las tablas:
+
+```bash
+psql -d chile_financial_data -f sql/create_tables.sql
+```
 
 ## Ejecutar la extracción
 
@@ -73,3 +95,20 @@ python -m src.transform
 
 La transformación convierte las fechas a objetos `date` y los valores de la UF
 a objetos `Decimal`.
+
+## Ejecutar el pipeline completo
+
+```bash
+python -m src.main
+```
+
+El pipeline extrae los valores de enero de 2025, los transforma y los inserta
+en PostgreSQL. La fecha es la clave primaria y la inserción utiliza
+`ON CONFLICT DO NOTHING`, por lo que ejecutar nuevamente el pipeline no crea
+duplicados.
+
+Para comprobar los datos cargados:
+
+```bash
+psql -d chile_financial_data -c "SELECT COUNT(*), MIN(observation_date), MAX(observation_date) FROM uf_values;"
+```
