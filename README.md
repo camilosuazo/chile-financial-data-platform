@@ -5,8 +5,12 @@ una plataforma de datos financieros chilenos.
 
 La primera versión sigue un flujo deliberadamente sencillo:
 
-```text
-API de la CMF -> Python -> PostgreSQL
+```mermaid
+flowchart LR
+    CMF[API de la CMF] --> E[Extracción en Python]
+    E --> T[Transformación]
+    T --> L[Carga idempotente]
+    L --> DB[(PostgreSQL)]
 ```
 
 Por ahora, el único indicador considerado es la Unidad de Fomento (UF).
@@ -22,9 +26,9 @@ Por ahora, el único indicador considerado es la Unidad de Fomento (UF).
 - Conexión e inserción desde Python mediante Psycopg.
 - Carga idempotente que evita fechas duplicadas.
 - Selección del año y mes que se desea cargar.
+- Carga histórica de un rango de meses.
 
-Los próximos pasos son incorporar logging, mejorar el manejo de errores y
-permitir cargar rangos históricos.
+Los próximos pasos son incorporar logging y mejorar el manejo de errores.
 
 ## Requisitos
 
@@ -116,6 +120,18 @@ puede elegir el período desde la terminal:
 ```bash
 python -m src.main --year 2024 --month 12
 ```
+
+Para cargar un rango histórico completo, incluyendo ambos límites:
+
+```bash
+python -m src.main \
+  --from-period 2020-01 \
+  --to-period 2025-12
+```
+
+Los meses se procesan en orden. Cada mes se confirma por separado en la base de
+datos, por lo que una ejecución interrumpida conserva los meses ya cargados. Al
+repetir el comando, la carga idempotente omite las fechas existentes.
 
 El pipeline transforma los valores y los inserta en PostgreSQL. La fecha es la
 clave primaria y la inserción utiliza
