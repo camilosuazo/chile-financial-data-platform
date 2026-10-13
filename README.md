@@ -21,9 +21,10 @@ Por ahora, el único indicador considerado es la Unidad de Fomento (UF).
 - Tabla PostgreSQL con restricciones de integridad.
 - Conexión e inserción desde Python mediante Psycopg.
 - Carga idempotente que evita fechas duplicadas.
+- Selección del año y mes que se desea cargar.
 
 Los próximos pasos son incorporar logging, mejorar el manejo de errores y
-permitir seleccionar el período que se desea cargar.
+permitir cargar rangos históricos.
 
 ## Requisitos
 
@@ -44,6 +45,13 @@ Instalar las dependencias:
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+Para desarrollar y ejecutar las pruebas, instalar las dependencias de
+desarrollo (estas también incluyen las dependencias de ejecución):
+
+```bash
+python -m pip install -r requirements-dev.txt
 ```
 
 Crear `.env` a partir del ejemplo y agregar la API key:
@@ -102,10 +110,23 @@ a objetos `Decimal`.
 python -m src.main
 ```
 
-El pipeline extrae los valores de enero de 2025, los transforma y los inserta
-en PostgreSQL. La fecha es la clave primaria y la inserción utiliza
+Sin argumentos, el pipeline extrae los valores de enero de 2025. También se
+puede elegir el período desde la terminal:
+
+```bash
+python -m src.main --year 2024 --month 12
+```
+
+El pipeline transforma los valores y los inserta en PostgreSQL. La fecha es la
+clave primaria y la inserción utiliza
 `ON CONFLICT DO NOTHING`, por lo que ejecutar nuevamente el pipeline no crea
 duplicados.
+
+Para ejecutar las pruebas:
+
+```bash
+python -m pytest
+```
 
 Para comprobar los datos cargados:
 

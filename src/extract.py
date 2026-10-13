@@ -3,14 +3,30 @@ import requests
 from src.config import get_cmf_api_key
 
 
-CMF_UF_URL = (
+CMF_UF_BASE_URL = (
     "https://api.cmfchile.cl/"
-    "api-sbifv3/recursos_api/uf/2025/01"
+    "api-sbifv3/recursos_api/uf"
 )
+DEFAULT_YEAR = 2025
+DEFAULT_MONTH = 1
 
 
-def fetch_uf_data() -> dict:
+def build_uf_url(year: int, month: int) -> str:
+    if year < 1:
+        raise ValueError("El año debe ser mayor que cero")
+
+    if month not in range(1, 13):
+        raise ValueError("El mes debe estar entre 1 y 12")
+
+    return f"{CMF_UF_BASE_URL}/{year:04d}/{month:02d}"
+
+
+def fetch_uf_data(
+    year: int = DEFAULT_YEAR,
+    month: int = DEFAULT_MONTH,
+) -> dict:
     api_key = get_cmf_api_key()
+    url = build_uf_url(year, month)
 
     params = {
         "apikey": api_key,
@@ -19,7 +35,7 @@ def fetch_uf_data() -> dict:
 
     try:
         response = requests.get(
-            CMF_UF_URL,
+            url,
             params=params,
             timeout=10,
         )
